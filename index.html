@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Influenciadores — Cardápio Web</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --surface3: #1e1e28;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f5;
+    --muted: #7c7c8a;
+    --muted2: #4a4a58;
+    --green: #00e5a0;
+    --green-bg: rgba(0,229,160,0.08);
+    --green-border: rgba(0,229,160,0.2);
+    --amber: #ffb547;
+    --amber-bg: rgba(255,181,71,0.08);
+    --amber-border: rgba(255,181,71,0.2);
+    --red: #ff4d6d;
+    --red-bg: rgba(255,77,109,0.08);
+    --red-border: rgba(255,77,109,0.2);
+    --accent: #7b5ea7;
+    --accent2: #a07be0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    padding: 2.5rem 2.5rem 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(123,94,167,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .logo-area { display: flex; align-items: center; gap: 12px; }
+  .logo-dot {
+    width: 36px; height: 36px;
+    background: var(--accent2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 14px;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px; color: var(--muted); }
+  .header-date { font-size: 12px; color: var(--muted2); letter-spacing: 0.05em; }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 1.5rem 0 0.5rem;
+    color: var(--text);
+  }
+  h1 span { color: var(--accent2); }
+  .subtitle { color: var(--muted); font-size: 14px; font-weight: 300; margin-bottom: 2rem; }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .tab-btn {
+    padding: 0.85rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--text); }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent2);
+  }
+  .tab-btn:hover { color: var(--text); }
+
+  /* MAIN */
+  main { padding: 2rem 2.5rem; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* KPI ROW */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi-card.green::before { background: var(--green); }
+  .kpi-card.amber::before { background: var(--amber); }
+  .kpi-card.red::before { background: var(--red); }
+  .kpi-card.purple::before { background: var(--accent2); }
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .kpi-val { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700; line-height: 1; }
+  .kpi-card.green .kpi-val { color: var(--green); }
+  .kpi-card.amber .kpi-val { color: var(--amber); }
+  .kpi-card.red .kpi-val { color: var(--red); }
+  .kpi-card.purple .kpi-val { color: var(--accent2); }
+  .kpi-sub { font-size: 11px; color: var(--muted2); margin-top: 4px; }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .filter-label { font-size: 12px; color: var(--muted); margin-right: 4px; }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .filter-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 500; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s;
+  }
+  thead th:hover { color: var(--text); }
+  thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
+  thead th.sorted .sort-icon { opacity: 1; color: var(--accent2); }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr.highlighted { background: rgba(123,94,167,0.06); }
+  td { padding: 13px 16px; font-size: 13px; white-space: nowrap; vertical-align: middle; }
+  .handle { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge.green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge.amber { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge.red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .trend-up { color: var(--green); font-weight: 500; }
+  .trend-dn { color: var(--red); font-weight: 500; }
+  .score-circle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    border: 2px solid;
+  }
+  .score-circle.high { color: var(--green); border-color: var(--green); background: var(--green-bg); }
+  .score-circle.mid { color: var(--amber); border-color: var(--amber); background: var(--amber-bg); }
+  .score-circle.low { color: var(--red); border-color: var(--red); background: var(--red-bg); }
+  .eng-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .eng-bar-bg { width: 70px; height: 5px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .eng-bar-fill { height: 5px; border-radius: 99px; }
+
+  /* CHARTS */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 1.5rem;
+  }
+  @media(max-width:768px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .chart-sub { font-size: 11px; color: var(--muted); margin-bottom: 1.2rem; }
+  .chart-inner { position: relative; width: 100%; }
+
+  /* RANKING */
+  .ranking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .rank-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: default;
+  }
+  .rank-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .rank-card.top { border-color: rgba(0,229,160,0.25); }
+  .rank-card.mid-r { border-color: rgba(255,181,71,0.2); }
+  .rank-card.low-r { border-color: rgba(255,77,109,0.15); }
+  .rank-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--muted2);
+    min-width: 32px;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .rank-card.top .rank-num { color: var(--green); }
+  .rank-info { flex: 1; }
+  .rank-handle { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .rank-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .rank-metrics { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .rank-metric { font-size: 11px; background: var(--surface3); padding: 2px 8px; border-radius: 6px; color: var(--muted); }
+  .rank-score-big { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .top .rank-score-big { color: var(--green); }
+  .mid-r .rank-score-big { color: var(--amber); }
+  .low-r .rank-score-big { color: var(--red); }
+
+  /* INSIGHT CARDS */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 1.5rem;
+  }
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem;
+  }
+  .insight-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .insight-title { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+  .insight-body { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* SECTION LABEL */
+  .sec { margin-bottom: 1rem; }
+  .sec-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted2); font-weight: 500; margin-bottom: .5rem; }
+  .sec-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+
+  /* FOOTER */
+  footer {
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted2);
+  }
+  .alert-bar {
+    background: rgba(255,181,71,0.06);
+    border: 1px solid rgba(255,181,71,0.2);
+    border-radius: 10px;
+    padding: .75rem 1rem;
+    font-size: 12px;
+    color: var(--amber);
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .alert-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+  .section-gap { margin-bottom: 2rem; }
+  
+  /* RESPONSIVE MEDIA QUERIES */
+  
+  /* Desktop Large (>1200px) - Max-width constraint */
+  @media(min-width: 1200px) {
+    header, main, footer {
+      max-width: 1600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+  
+  /* Tablet (600px-900px) - Adaptive grids */
+  @media(max-width: 900px) {
+    .kpi-row {
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    .ranking-grid {
+      grid-template-columns: 1fr;
+    }
+    .insight-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Mobile (max-width: 600px) - Single column layout */
+  @media(max-width:600px) {
+    header { padding: 1.5rem 1.2rem 0; }
+    main { padding: 1.5rem 1.2rem; }
+    footer { padding: 1rem 1.2rem; }
+    
+    /* Force single column for KPI cards */
+    .kpi-row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    
+    /* Header adaptations */
+    .header-top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    h1 {
+      font-size: 1.8rem;
+    }
+    
+    /* Tab navigation scroll */
+    .nav-tabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab-btn {
+      padding: 0.75rem 1.2rem;
+      font-size: 12px;
+    }
+    
+    /* Table with smooth horizontal scroll */
+    table {
+      font-size: 11px;
+      min-width: 800px;
+    }
+    
+    td, thead th {
+      padding: 10px 12px;
+    }
+    
+    /* Card padding reduction */
+    .rank-card {
+      padding: 1rem;
+    }
+    
+    .insight-card {
+      padding: 1rem;
+    }
+  }
+  
+  /* Mobile Small (<400px) - Further optimizations */
+  @media(max-width: 400px) {
+    .kpi-card {
+      padding: 1rem 1.2rem;
+    }
+    
+    .kpi-val {
+      font-size: 1.6rem;
+    }
+    
+    .filter-bar {
+      gap: 6px;
+    }
+    
+    .filter-btn {
+      padding: 5px 12px;
+      font-size: 11px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo-area">
+      <div class="logo-dot">CW</div>
+      <div class="logo-text">Cardápio Web · Análise de Influenciadores</div>
+    </div>
+    <div class="header-date">Período: Mar 26 – Abr 24, 2026</div>
+  </div>
+  <h1>Dashboard de <span>Influenciadores</span></h1>
+  <p class="subtitle">Análise comparativa de 11 perfis · Estratégia topo de funil · Food service & Delivery</p>
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('visao')">Visão geral</button>
+    <button class="tab-btn" onclick="showTab('tabela')">Tabela comparativa</button>
+    <button class="tab-btn" onclick="showTab('graficos')">Gráficos</button>
+    <button class="tab-btn" onclick="showTab('ranking')">Ranking</button>
+    <button class="tab-btn" onclick="showTab('insights')">Insights</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- TAB: VISÃO GERAL -->
+<div class="tab-panel active" id="tab-visao">
+  <div class="kpi-row">
+    <div class="kpi-card green">
+      <div class="kpi-label">Perfis aprovados</div>
+      <div class="kpi-val">2</div>
+      <div class="kpi-sub">Score acima de 7/10</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Testar com cautela</div>
+      <div class="kpi-val">3</div>
+      <div class="kpi-sub">Score entre 4 e 7</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Descartar</div>
+      <div class="kpi-val">6</div>
+      <div class="kpi-sub">Score abaixo de 4</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Maior engajamento</div>
+      <div class="kpi-val">7,12%</div>
+      <div class="kpi-sub">@arthurpaek</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Maior crescimento/dia</div>
+      <div class="kpi-val">+2.587</div>
+      <div class="kpi-sub">@euluizfelipealves</div>
+    </div>
+  </div>
+
+  <div class="alert-bar">
+    <div class="alert-icon">⚠</div>
+    <div><strong>Atenção:</strong> Os dados do perfil @virgilioteixeiraa foram identificados no relatório de origem como "Bianca / Boca Rosa". Há uma inconsistência entre handle e nome. Confirme o perfil correto antes de qualquer negociação.</div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card full">
+      <div class="chart-title">Taxa de engajamento por perfil</div>
+      <div class="chart-sub">Benchmark macro-influenciadores: ~1,7% · Verde = forte · Laranja = moderado · Vermelho = crítico</div>
+      <div class="chart-inner" style="height:220px">
+        <canvas id="chartEngGeral" role="img" aria-label="Taxa de engajamento dos 11 influenciadores">Engajamento por influenciador</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Crescimento médio diário</div>
+      <div class="chart-sub">Seguidores ganhos ou perdidos por dia (30d)</div>
+      <div class="chart-inner" style="height:240px">
+        <canvas id="chartGrowGeral" role="img" aria-label="Crescimento diário de seguidores">Crescimento por influenciador</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Distribuição de veredictos</div>
+      <div class="chart-sub">Por score de decisão para Cardápio Web</div>
+      <div class="chart-inner" style="height:240px">
+        <canvas id="chartDonut" role="img" aria-label="Distribuição dos veredictos">2 aprovados, 3 a testar, 6 descartar</canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: TABELA -->
+<div class="tab-panel" id="tab-tabela">
+  <div class="filter-bar">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" onclick="filterTable('todos',this)">Todos (11)</button>
+    <button class="filter-btn" onclick="filterTable('aprovar',this)">Aprovar</button>
+    <button class="filter-btn" onclick="filterTable('testar',this)">Testar</button>
+    <button class="filter-btn" onclick="filterTable('descartar',this)">Descartar</button>
+  </div>
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Perfil <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable(1)">Seguidores <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable(2)">Eng. % <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable(3)">Avg. Likes <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable(4)">Avg. Coments <span class="sort-icon">↕</span></th>
+          <th onclick="sortTable(5)">Cresc./dia <span class="sort-icon">↕</span></th>
+          <th>Nicho</th>
+          <th>Veredicto</th>
+          <th onclick="sortTable(8)">Score <span class="sort-icon">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB: GRÁFICOS -->
+<div class="tab-panel" id="tab-graficos">
+  <div class="charts-grid">
+    <div class="chart-card full">
+      <div class="chart-title">Engajamento vs. tamanho de base</div>
+      <div class="chart-sub">Cada bolha = um perfil. Eixo X = seguidores (M). Eixo Y = engajamento (%)</div>
+      <div class="chart-inner" style="height:300px">
+        <canvas id="chartBubble" role="img" aria-label="Gráfico de dispersão engajamento vs seguidores">Relação entre tamanho de audiência e taxa de engajamento</canvas>
+      </div>
+    </div>
+    <div class="chart-card full">
+      <div class="chart-title">Média de likes e comentários por perfil</div>
+      <div class="chart-sub">Volume absoluto de interações por post (escala logarítmica)</div>
+      <div class="chart-inner" style="height:260px">
+        <canvas id="chartInteracao" role="img" aria-label="Médias de likes e comentários por perfil">Likes e comentários médios por influenciador</canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: RANKING -->
+<div class="tab-panel" id="tab-ranking">
+  <div class="ranking-grid" id="rankingGrid"></div>
+</div>
+
+<!-- TAB: INSIGHTS -->
+<div class="tab-panel" id="tab-insights">
+  <div class="alert-bar">
+    <div class="alert-icon">★</div>
+    <div><strong>Conclusão estratégica:</strong> Tamanho de base não determina valor para a campanha. Dos 11 perfis analisados, os 2 maiores (@dudariedel 54M e @caiocastro 19M) são os piores candidatos. Nicho e engajamento são os fatores decisivos.</div>
+  </div>
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="insight-icon" style="background:rgba(0,229,160,0.1)">✦</div>
+      <div class="insight-title">Padrão crítico identificado</div>
+      <div class="insight-body">9 dos 11 perfis estão com engajamento abaixo do benchmark de 1,7% para macro-influenciadores. Isso indica que a maioria da lista foi montada com base em volume, não em qualidade de audiência.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="background:rgba(160,123,224,0.1)">◈</div>
+      <div class="insight-title">Nicho como filtro primário</div>
+      <div class="insight-body">Dos 3 perfis com nicho direto em gastronomia/culinária (@arthurpaek, @euluizfelipealves, @isascherer), todos têm as maiores taxas de engajamento do grupo. O nicho prediz o engajamento melhor do que o tamanho da conta.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="background:rgba(255,181,71,0.1)">⚡</div>
+      <div class="insight-title">Risco de audiência inflada</div>
+      <div class="insight-body">@caiocastro tem 19,6M de seguidores com apenas 4.681 likes médios por post (0,02%). Isso equivale a 1 curtida para cada 4.184 seguidores — sinal claro de audiência fantasma ou base de fãs completamente inativa.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="background:rgba(255,77,109,0.1)">▼</div>
+      <div class="insight-title">Declínio generalizado</div>
+      <div class="insight-body">7 dos 11 perfis estão em saldo negativo de seguidores. @dudariedel lidera as perdas com -5.263/dia. O grupo de celebridades tradicionais como um todo está em queda, sugerindo migração de audiência para criadores de nicho.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="background:rgba(0,229,160,0.1)">↗</div>
+      <div class="insight-title">Momento de @isascherer</div>
+      <div class="insight-body">Pico viral detectado entre 17-18/04 com ganho de 4.000 a 6.000 seguidores por dia. Alta frequência de posts (+6 na semana). É o perfil com maior momentum atual — collab agora aproveita o algoritmo a favor.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon" style="background:rgba(160,123,224,0.1)">◉</div>
+      <div class="insight-title">Recomendação de estratégia</div>
+      <div class="insight-body">Priorizar perfis com nicho food/culinária, engajamento acima de 2%, crescimento positivo e audiência no Brasil. Micro e médios de nicho correto superam macro de nicho errado em CPL e conversão para o ICP da Cardápio Web.</div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <span>Cardápio Web · Análise de Influenciadores 2026</span>
+  <span>Fonte: Not Just Analytics · 11 perfis analisados · Abr/2026</span>
+</footer>
+
+<script>
+const DATA = [
+  { handle:'@arthurpaek', seg:6455677, eng:7.12, likes:455284, coments:4261, crescDia:2519, nicho:'Gastronomia', veredicto:'Aprovar', score:9 },
+  { handle:'@euluizfelipealves', seg:1597905, eng:5.98, likes:92501, coments:3008, crescDia:2587, nicho:'Culinária / Lifestyle', veredicto:'Aprovar', score:8.5 },
+  { handle:'@isascherer', seg:2077049, eng:1.99, likes:40869, coments:561, crescDia:2249, nicho:'Gastronomia / Chef', veredicto:'Testar', score:6.5 },
+  { handle:'@rodrigofaro', seg:1488750, eng:1.94, likes:28530, coments:352, crescDia:-369, nicho:'Artista / Entretenimento', veredicto:'Testar', score:4.5 },
+  { handle:'@explorecomigo', seg:1106116, eng:0.93, likes:10155, coments:104, crescDia:-133, nicho:'Viagens / Lifestyle', veredicto:'Testar', score:3.5 },
+  { handle:'@rodrigohilbert', seg:5524832, eng:0.46, likes:24798, coments:643, crescDia:575, nicho:'Celebridade / TV', veredicto:'Descartar', score:3 },
+  { handle:'@chefjulima', seg:32909845, eng:0.59, likes:190528, coments:3125, crescDia:-3923, nicho:'Digital Creator', veredicto:'Descartar', score:3 },
+  { handle:'@eduguedesoficial', seg:4606390, eng:0.32, likes:14181, coments:370, crescDia:-647, nicho:'Digital Creator', veredicto:'Descartar', score:2 },
+  { handle:'@virgilioteixeiraa*', seg:19043435, eng:0.30, likes:55432, coments:880, crescDia:-1503, nicho:'Beleza / Celebridade', veredicto:'Descartar', score:2 },
+  { handle:'@caiocastro', seg:19613040, eng:0.02, likes:4681, coments:105, crescDia:-1305, nicho:'Ator / Atleta', veredicto:'Descartar', score:1 },
+  { handle:'@dudariedel', seg:54498412, eng:0.21, likes:112593, coments:880, crescDia:-5263, nicho:'Digital Creator', veredicto:'Descartar', score:1 },
+];
+
+let currentFilter = 'todos';
+let sortCol = 8;
+let sortDir = -1;
+
+function fmt(n){ return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1000?(n/1000).toFixed(0)+'k':n; }
+function fmtFull(n){ return n.toLocaleString('pt-BR'); }
+
+function scoreClass(s){ return s>=7?'high':s>=4?'mid':'low'; }
+function verdClass(v){ return v==='Aprovar'?'green':v==='Testar'?'amber':'red'; }
+function engColor(e){ return e>=2?'#00e5a0':e>=0.5?'#ffb547':'#ff4d6d'; }
+
+function buildTable(data){
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  data.forEach(d=>{
+    const engPct = Math.min(d.eng/8*100,100);
+    const crescTxt = d.crescDia>=0?`<span class="trend-up">+${fmtFull(d.crescDia)}</span>`:`<span class="trend-dn">${fmtFull(d.crescDia)}</span>`;
+    tbody.innerHTML += `<tr data-veredicto="${d.veredicto}">
+      <td><span class="handle">${d.handle}</span></td>
+      <td>${fmt(d.seg)}</td>
+      <td>
+        <div class="eng-bar-wrap">
+          <span style="color:${engColor(d.eng)};font-weight:500;min-width:38px">${d.eng.toFixed(2)}%</span>
+          <div class="eng-bar-bg"><div class="eng-bar-fill" style="width:${engPct}%;background:${engColor(d.eng)}"></div></div>
+        </div>
+      </td>
+      <td>${fmtFull(d.likes)}</td>
+      <td>${fmtFull(d.coments)}</td>
+      <td>${crescTxt}</td>
+      <td style="color:var(--muted)">${d.nicho}</td>
+      <td><span class="badge ${verdClass(d.veredicto)}">${d.veredicto}</span></td>
+      <td><span class="score-circle ${scoreClass(d.score)}">${d.score}</span></td>
+    </tr>`;
+  });
+}
+
+function filterTable(filter, btn){
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let filtered = filter==='todos'?DATA:DATA.filter(d=>d.veredicto===(filter==='aprovar'?'Aprovar':filter==='testar'?'Testar':'Descartar'));
+  buildTable(filtered);
+}
+
+function sortTable(col){
+  if(sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=-1; }
+  document.querySelectorAll('thead th').forEach((th,i)=>{
+    th.classList.toggle('sorted',i===col);
+  });
+  const keys=['handle','seg','eng','likes','coments','crescDia','nicho','veredicto','score'];
+  const sorted=[...DATA].sort((a,b)=>{
+    const va=a[keys[col]], vb=b[keys[col]];
+    return typeof va==='string'?va.localeCompare(vb)*sortDir:(va-vb)*sortDir;
+  });
+  buildTable(sorted);
+}
+
+function buildRanking(){
+  const sorted=[...DATA].sort((a,b)=>b.score-a.score);
+  const grid=document.getElementById('rankingGrid');
+  grid.innerHTML='';
+  sorted.forEach((d,i)=>{
+    const cls=d.veredicto==='Aprovar'?'top':d.veredicto==='Testar'?'mid-r':'low-r';
+    const badgeCls=verdClass(d.veredicto);
+    grid.innerHTML+=`<div class="rank-card ${cls}">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-handle">${d.handle}</div>
+        <div class="rank-desc">${d.nicho} · ${fmt(d.seg)} seguidores</div>
+        <div class="rank-metrics">
+          <span class="rank-metric">Eng: ${d.eng.toFixed(2)}%</span>
+          <span class="rank-metric">${d.crescDia>=0?'+':''}${fmtFull(d.crescDia)}/dia</span>
+          <span class="badge ${badgeCls}" style="font-size:10px">${d.veredicto}</span>
+        </div>
+      </div>
+      <div class="rank-score-big">${d.score}</div>
+    </div>`;
+  });
+}
+
+function showTab(id){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='graficos') setTimeout(buildChartExtra,50);
+}
+
+buildTable(DATA);
+buildRanking();
+
+const labels = DATA.map(d=>d.handle.replace('@',''));
+const engData = DATA.map(d=>d.eng);
+const engColors = DATA.map(d=>engColor(d.eng));
+
+new Chart(document.getElementById('chartEngGeral'),{
+  type:'bar',
+  data:{ labels, datasets:[{ data:engData, backgroundColor:engColors, borderRadius:5, borderSkipped:false }] },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>ctx.parsed.y.toFixed(2)+'%' } } },
+    scales:{
+      x:{ ticks:{ color:'#7c7c8a', font:{size:10}, maxRotation:35, autoSkip:false }, grid:{display:false}, border:{color:'rgba(255,255,255,0.07)'} },
+      y:{ ticks:{ color:'#7c7c8a', font:{size:10}, callback:v=>v+'%' }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{color:'rgba(255,255,255,0.07)'} }
+    }
+  }
+});
+
+const growSorted = [...DATA].map(d=>({l:d.handle.replace('@',''),v:d.crescDia})).sort((a,b)=>b.v-a.v);
+new Chart(document.getElementById('chartGrowGeral'),{
+  type:'bar',
+  data:{ labels:growSorted.map(d=>d.l), datasets:[{ data:growSorted.map(d=>d.v), backgroundColor:growSorted.map(d=>d.v>=0?'#00e5a0':'#ff4d6d'), borderRadius:5, borderSkipped:false }] },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>(ctx.parsed.y>=0?'+':'')+ctx.parsed.y.toLocaleString('pt-BR')+' seg/dia' } } },
+    scales:{
+      x:{ ticks:{ color:'#7c7c8a', font:{size:10}, maxRotation:40, autoSkip:false }, grid:{display:false}, border:{color:'rgba(255,255,255,0.07)'} },
+      y:{ ticks:{ color:'#7c7c8a', font:{size:10}, callback:v=>(v>=0?'+':'')+v.toLocaleString('pt-BR') }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{color:'rgba(255,255,255,0.07)'} }
+    }
+  }
+});
+
+new Chart(document.getElementById('chartDonut'),{
+  type:'doughnut',
+  data:{
+    labels:['Aprovar','Testar','Descartar'],
+    datasets:[{ data:[2,3,6], backgroundColor:['#00e5a0','#ffb547','#ff4d6d'], borderWidth:0, hoverOffset:6 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{ display:true, position:'bottom', labels:{ color:'#7c7c8a', font:{size:12}, padding:20, usePointStyle:true, pointStyleWidth:10 } },
+      tooltip:{ callbacks:{ label:ctx=>ctx.label+': '+ctx.parsed+' perfis' } }
+    },
+    cutout:'65%'
+  }
+});
+
+let extraBuilt = false;
+function buildChartExtra(){
+  if(extraBuilt) return;
+  extraBuilt = true;
+
+  new Chart(document.getElementById('chartBubble'),{
+    type:'bubble',
+    data:{
+      datasets:[{
+        label:'Perfis',
+        data: DATA.map(d=>({ x: +(d.seg/1e6).toFixed(2), y: d.eng, r: Math.max(6, Math.min(24, d.score*2.5)), label: d.handle })),
+        backgroundColor: DATA.map(d=>engColor(d.eng)+'99'),
+        borderColor: DATA.map(d=>engColor(d.eng)),
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:20 },
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{
+          label: ctx => {
+            const d = DATA[ctx.dataIndex];
+            return [`${d.handle}`, `Eng: ${d.eng.toFixed(2)}%`, `Seg: ${fmt(d.seg)}`, `Score: ${d.score}/10`];
+          }
+        }}
+      },
+      scales:{
+        x:{ title:{ display:true, text:'Seguidores (M)', color:'#7c7c8a', font:{size:11} }, ticks:{ color:'#7c7c8a', font:{size:10}, callback:v=>v+'M' }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{color:'rgba(255,255,255,0.07)'} },
+        y:{ title:{ display:true, text:'Engajamento (%)', color:'#7c7c8a', font:{size:11} }, ticks:{ color:'#7c7c8a', font:{size:10}, callback:v=>v+'%' }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{color:'rgba(255,255,255,0.07)'}, min:-0.5, max:8.5 }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chartInteracao'),{
+    type:'bar',
+    data:{
+      labels: DATA.map(d=>d.handle.replace('@','')),
+      datasets:[
+        { label:'Avg. likes', data:DATA.map(d=>d.likes), backgroundColor:'#7b5ea799', borderRadius:4 },
+        { label:'Avg. coments ×10', data:DATA.map(d=>d.coments*10), backgroundColor:'#a07be066', borderRadius:4 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:true, position:'top', labels:{ color:'#7c7c8a', font:{size:11}, usePointStyle:true, pointStyleWidth:10 } },
+        tooltip:{ callbacks:{ label: ctx => ctx.dataset.label.includes('coments')?'Coments: '+fmtFull(Math.round(ctx.parsed.y/10)):'Likes: '+fmtFull(ctx.parsed.y) } }
+      },
+      scales:{
+        x:{ ticks:{ color:'#7c7c8a', font:{size:10}, maxRotation:35, autoSkip:false }, grid:{display:false}, border:{color:'rgba(255,255,255,0.07)'} },
+        y:{ type:'logarithmic', ticks:{ color:'#7c7c8a', font:{size:10}, callback:v=>v>=1000?v/1000+'k':v }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{color:'rgba(255,255,255,0.07)'} }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
